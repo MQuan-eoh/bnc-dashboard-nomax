@@ -21,7 +21,7 @@
 .dashboard-header {
   width: 98%; /* Reduced width slightly to prevent edge overflow */
   box-sizing: border-box; /* Ensure padding doesn't cause overflow */
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.85);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -92,7 +92,7 @@
 .glass-panel {
   position: relative;
   /* Darker background for contrast with white body */
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.85);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 
@@ -258,4 +258,95 @@
   background: rgba(0, 0, 0, 0.2);
   padding: 2px 4px;
   border-radius: 4px;
+}
+
+/* Tooltip Styles */
+.tooltip-container {
+  position: relative;
+  cursor: pointer;
+}
+
+.tooltip-content {
+  visibility: hidden;
+  width: max-content;
+  min-width: 180px;
+  background: rgba(20, 20, 35, 0.95);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  text-align: left;
+  border-radius: 12px;
+  padding: 12px 16px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 140%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.8);
+  opacity: 0;
+  transition: all 0.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  border: 1px solid rgba(0, 242, 255, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 255, 0.15);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tooltip-content::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -8px;
+  border-width: 8px;
+  border-style: solid;
+  border-color: rgba(20, 20, 35, 0.95) transparent transparent transparent;
+}
+
+.tooltip-container:hover .tooltip-content {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  bottom: 130%;
+}
+
+.tooltip-icon {
+  font-size: 1.8rem;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+  animation: pulse 2s infinite;
+}
+
+.tooltip-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.tooltip-label {
+  font-size: 0.7rem;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.tooltip-time {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #00f2ff;
+  text-shadow: 0 0 15px rgba(0, 242, 255, 0.6);
+  font-family: "Roboto Mono", monospace;
+  letter-spacing: 1px;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }

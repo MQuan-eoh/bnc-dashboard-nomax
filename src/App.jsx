@@ -10,6 +10,22 @@ const MinMaxTable = ({ phase1, phase2, phase3 }) => {
     val === Infinity || val === -Infinity || val === null
       ? "--"
       : val.toFixed(2);
+
+  const renderValue = (val, time) => (
+    <div className="mm-value tooltip-container">
+      {format(val)}
+      {time && (
+        <div className="tooltip-content">
+          <div className="tooltip-icon">🕒</div>
+          <div className="tooltip-info">
+            <span className="tooltip-label">Recorded at</span>
+            <span className="tooltip-time">{time}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-max-container">
       <div className="min-max-grid">
@@ -19,14 +35,14 @@ const MinMaxTable = ({ phase1, phase2, phase3 }) => {
         <div className="mm-header">Phase 3</div>
 
         <div className="mm-label">Min</div>
-        <div className="mm-value">{format(phase1.min)}</div>
-        <div className="mm-value">{format(phase2.min)}</div>
-        <div className="mm-value">{format(phase3.min)}</div>
+        {renderValue(phase1.min, phase1.minTime)}
+        {renderValue(phase2.min, phase2.minTime)}
+        {renderValue(phase3.min, phase3.minTime)}
 
         <div className="mm-label">Max</div>
-        <div className="mm-value">{format(phase1.max)}</div>
-        <div className="mm-value">{format(phase2.max)}</div>
-        <div className="mm-value">{format(phase3.max)}</div>
+        {renderValue(phase1.max, phase1.maxTime)}
+        {renderValue(phase2.max, phase2.maxTime)}
+        {renderValue(phase3.max, phase3.maxTime)}
       </div>
     </div>
   );
@@ -119,6 +135,11 @@ function App() {
         p2: { min: null, max: null },
         p3: { min: null, max: null },
       },
+      cosPhi: {
+        pf1: { min: null, max: null },
+        pf2: { min: null, max: null },
+        pf3: { min: null, max: null },
+      },
     },
     extra: {
       activePowerTotal: 0,
@@ -136,6 +157,7 @@ function App() {
   const [voltageHistory, setVoltageHistory] = useState([]);
   const [currentHistory, setCurrentHistory] = useState([]);
   const [powerHistory, setPowerHistory] = useState([]);
+  const [cosPhiHistory, setCosPhiHistory] = useState([]);
   const [thdHistory, setThdHistory] = useState([]);
 
   useEffect(() => {
@@ -197,32 +219,71 @@ function App() {
         const pfTotal = getValue(23);
 
         const thdMain = Math.max(thdI1, thdI2, thdI3);
+        const time = new Date().toLocaleTimeString([], { hour12: false });
 
         // Update Data State
         setData((prev) => {
-          const updateMinMax = (prevVal, newVal) => {
-            if (prevVal.min === null) return { min: newVal, max: newVal };
+          const updateMinMax = (prevVal, newVal, currentTime) => {
+            const currentMin = prevVal.min;
+            const currentMax = prevVal.max;
+            const currentMinTime = prevVal.minTime || null;
+            const currentMaxTime = prevVal.maxTime || null;
+
+            let nextMin = currentMin;
+            let nextMinTime = currentMinTime;
+            let nextMax = currentMax;
+            let nextMaxTime = currentMaxTime;
+
+            if (currentMin === null || newVal < currentMin) {
+              nextMin = newVal;
+              nextMinTime = currentTime;
+            }
+
+            if (currentMax === null || newVal > currentMax) {
+              nextMax = newVal;
+              nextMaxTime = currentTime;
+            }
+
             return {
-              min: Math.min(prevVal.min, newVal),
-              max: Math.max(prevVal.max, newVal),
+              min: nextMin,
+              minTime: nextMinTime,
+              max: nextMax,
+              maxTime: nextMaxTime,
             };
           };
 
           const newDailyMinMax = {
             voltage: {
-              u1: updateMinMax(prev.dailyMinMax.voltage.u1, u1),
-              u2: updateMinMax(prev.dailyMinMax.voltage.u2, u2),
-              u3: updateMinMax(prev.dailyMinMax.voltage.u3, u3),
+              u1: updateMinMax(prev.dailyMinMax.voltage.u1, u1, time),
+              u2: updateMinMax(prev.dailyMinMax.voltage.u2, u2, time),
+              u3: updateMinMax(prev.dailyMinMax.voltage.u3, u3, time),
             },
             current: {
-              i1: updateMinMax(prev.dailyMinMax.current.i1, i1),
-              i2: updateMinMax(prev.dailyMinMax.current.i2, i2),
-              i3: updateMinMax(prev.dailyMinMax.current.i3, i3),
+              i1: updateMinMax(prev.dailyMinMax.current.i1, i1, time),
+              i2: updateMinMax(prev.dailyMinMax.current.i2, i2, time),
+              i3: updateMinMax(prev.dailyMinMax.current.i3, i3, time),
             },
             power: {
-              p1: updateMinMax(prev.dailyMinMax.power.p1, p1),
-              p2: updateMinMax(prev.dailyMinMax.power.p2, p2),
-              p3: updateMinMax(prev.dailyMinMax.power.p3, p3),
+              p1: updateMinMax(prev.dailyMinMax.power.p1, p1, time),
+              p2: updateMinMax(prev.dailyMinMax.power.p2, p2, time),
+              p3: updateMinMax(prev.dailyMinMax.power.p3, p3, time),
+            },
+            cosPhi: {
+              pf1: updateMinMax(
+                prev.dailyMinMax.cosPhi?.pf1 || { min: null, max: null },
+                pf1,
+                time
+              ),
+              pf2: updateMinMax(
+                prev.dailyMinMax.cosPhi?.pf2 || { min: null, max: null },
+                pf2,
+                time
+              ),
+              pf3: updateMinMax(
+                prev.dailyMinMax.cosPhi?.pf3 || { min: null, max: null },
+                pf3,
+                time
+              ),
             },
           };
 
@@ -256,7 +317,6 @@ function App() {
         });
 
         // Update History
-        const time = new Date().toLocaleTimeString([], { hour12: false });
 
         const updateChartData = (prev, v1, v2, v3) => {
           const newData = [
@@ -269,6 +329,7 @@ function App() {
         setVoltageHistory((prev) => updateChartData(prev, u1, u2, u3));
         setCurrentHistory((prev) => updateChartData(prev, i1, i2, i3));
         setPowerHistory((prev) => updateChartData(prev, p1, p2, p3));
+        setCosPhiHistory((prev) => updateChartData(prev, pf1, pf2, pf3));
         setThdHistory((prev) => updateChartData(prev, thdI1, thdI2, thdI3));
       },
     });
@@ -420,22 +481,36 @@ function App() {
             <span className="panel-title">Cos Phi (Power Factor)</span>
             <span className="icon">📈</span>
           </div>
-
-          <div style={{ width: "100%", height: "180px" }}>
-            <Bar3DChart
-              data={[
-                { name: "PF1", value: data.cosPhi.pf1, fill: "#FFD700" },
-                { name: "PF2", value: data.cosPhi.pf2, fill: "#FF9100" },
-                { name: "PF3", value: data.cosPhi.pf3, fill: "#FFFF00" },
-                { name: "Total", value: data.cosPhi.total, fill: "#00E676" },
-              ]}
-            />
+          <div className="phase-grid">
+            <div className="phase-item">
+              <span className="phase-label">PF1</span>
+              <span className="phase-value">{data.cosPhi.pf1.toFixed(2)}</span>
+            </div>
+            <div className="phase-item">
+              <span className="phase-label">PF2</span>
+              <span className="phase-value">{data.cosPhi.pf2.toFixed(2)}</span>
+            </div>
+            <div className="phase-item">
+              <span className="phase-label">PF3</span>
+              <span className="phase-value">{data.cosPhi.pf3.toFixed(2)}</span>
+            </div>
           </div>
-
-          <div className="sub-value">
-            <span>Total PF:</span>
-            <span>{data.cosPhi.total.toFixed(2)}</span>
-          </div>
+          <EnergyChart
+            id="cosPhiChart"
+            data={cosPhiHistory}
+            lines={[
+              { key: "value1", color: "#FFD700", name: "PF1" },
+              { key: "value2", color: "#FF9100", name: "PF2" },
+              { key: "value3", color: "#FFFF00", name: "PF3" },
+            ]}
+            unit=""
+            height="150px"
+          />
+          <MinMaxTable
+            phase1={data.dailyMinMax.cosPhi?.pf1 || { min: 0, max: 0 }}
+            phase2={data.dailyMinMax.cosPhi?.pf2 || { min: 0, max: 0 }}
+            phase3={data.dailyMinMax.cosPhi?.pf3 || { min: 0, max: 0 }}
+          />
         </div>
 
         {/* THD */}
