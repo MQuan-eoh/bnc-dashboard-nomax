@@ -221,3 +221,41 @@
   display: flex;
   justify-content: space-between;
 }
+
+.min-max-container {
+  margin-top: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 0.8rem;
+}
+
+.min-max-grid {
+  display: grid;
+  grid-template-columns: 50px 1fr 1fr 1fr;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.mm-header {
+  font-size: 0.8rem;
+  color: #aaa;
+  text-align: center;
+  font-weight: 500;
+}
+
+.mm-label {
+  font-size: 0.9rem;
+  color: #00f2ff;
+  font-weight: bold;
+  text-align: left;
+}
+
+.mm-value {
+  font-size: 0.9rem;
+  color: #fff;
+  text-align: center;
+  font-family: "Roboto Mono", monospace;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 4px;
+  border-radius: 4px;
+}

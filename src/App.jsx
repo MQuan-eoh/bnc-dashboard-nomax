@@ -2,7 +2,35 @@ import { useState, useEffect, useRef } from "react";
 import "./App.css";
 import EnergyChart from "./components/EnergyChart";
 import Bar3DChart from "./components/Bar3DChart";
+import ThemeSettings from "./components/ThemeSettings";
 import eraWidget from "@eohjsc/era-widget";
+
+const MinMaxTable = ({ phase1, phase2, phase3 }) => {
+  const format = (val) =>
+    val === Infinity || val === -Infinity || val === null
+      ? "--"
+      : val.toFixed(2);
+  return (
+    <div className="min-max-container">
+      <div className="min-max-grid">
+        <div className="mm-header"></div>
+        <div className="mm-header">Phase 1</div>
+        <div className="mm-header">Phase 2</div>
+        <div className="mm-header">Phase 3</div>
+
+        <div className="mm-label">Min</div>
+        <div className="mm-value">{format(phase1.min)}</div>
+        <div className="mm-value">{format(phase2.min)}</div>
+        <div className="mm-value">{format(phase3.min)}</div>
+
+        <div className="mm-label">Max</div>
+        <div className="mm-value">{format(phase1.max)}</div>
+        <div className="mm-value">{format(phase2.max)}</div>
+        <div className="mm-value">{format(phase3.max)}</div>
+      </div>
+    </div>
+  );
+};
 
 function App() {
   const [showFullTHD, setShowFullTHD] = useState(false);
@@ -47,6 +75,33 @@ function App() {
         thdU3N: 0,
       },
     },
+    dailyMinMax: {
+      voltage: {
+        u1: { min: null, max: null },
+        u2: { min: null, max: null },
+        u3: { min: null, max: null },
+      },
+      current: {
+        i1: { min: null, max: null },
+        i2: { min: null, max: null },
+        i3: { min: null, max: null },
+      },
+      power: {
+        p1: { min: null, max: null },
+        p2: { min: null, max: null },
+        p3: { min: null, max: null },
+      },
+    },
+    extra: {
+      activePowerTotal: 0,
+      activeEnergyDelivered: 0,
+    },
+    cosPhi: {
+      pf1: 0,
+      pf2: 0,
+      pf3: 0,
+      total: 0,
+    },
   });
 
   // History State for Charts
@@ -60,7 +115,7 @@ function App() {
       needRealtimeConfigs: true,
       needHistoryConfigs: true,
       needActions: true,
-      maxRealtimeConfigsCount: 20,
+      maxRealtimeConfigsCount: 24,
       maxHistoryConfigsCount: 1,
       maxActionsCount: 2,
       minRealtimeConfigsCount: 0,
@@ -105,24 +160,71 @@ function App() {
         const thdU2N = getValue(16);
         const thdU3N = getValue(17);
 
+        const activePowerTotal = getValue(18);
+        const activeEnergyDelivered = getValue(19);
+
+        const pf1 = getValue(20);
+        const pf2 = getValue(21);
+        const pf3 = getValue(22);
+        const pfTotal = getValue(23);
+
         const thdMain = Math.max(thdI1, thdI2, thdI3);
 
         // Update Data State
-        setData({
-          summary: {
-            uTotal: (u1 + u2 + u3) / 3,
-            iTotal: i1 + i2 + i3,
-            pMax: pMax,
-            pMin: pMin,
-          },
-          voltage: { u1, u2, u3, unit: "V" },
-          current: { i1, i2, i3, unit: "A" },
-          power: { p1, p2, p3, total: pTotal, unit: "kW" },
-          maxValues: { pMax, iMax: 0 },
-          thd: {
-            main: thdMain,
-            details: { thdI1, thdI2, thdI3, thdU1N, thdU2N, thdU3N },
-          },
+        setData((prev) => {
+          const updateMinMax = (prevVal, newVal) => {
+            if (prevVal.min === null) return { min: newVal, max: newVal };
+            return {
+              min: Math.min(prevVal.min, newVal),
+              max: Math.max(prevVal.max, newVal),
+            };
+          };
+
+          const newDailyMinMax = {
+            voltage: {
+              u1: updateMinMax(prev.dailyMinMax.voltage.u1, u1),
+              u2: updateMinMax(prev.dailyMinMax.voltage.u2, u2),
+              u3: updateMinMax(prev.dailyMinMax.voltage.u3, u3),
+            },
+            current: {
+              i1: updateMinMax(prev.dailyMinMax.current.i1, i1),
+              i2: updateMinMax(prev.dailyMinMax.current.i2, i2),
+              i3: updateMinMax(prev.dailyMinMax.current.i3, i3),
+            },
+            power: {
+              p1: updateMinMax(prev.dailyMinMax.power.p1, p1),
+              p2: updateMinMax(prev.dailyMinMax.power.p2, p2),
+              p3: updateMinMax(prev.dailyMinMax.power.p3, p3),
+            },
+          };
+
+          return {
+            summary: {
+              uTotal: (u1 + u2 + u3) / 3,
+              iTotal: i1 + i2 + i3,
+              pMax: pMax,
+              pMin: pMin,
+            },
+            voltage: { u1, u2, u3, unit: "V" },
+            current: { i1, i2, i3, unit: "A" },
+            power: { p1, p2, p3, total: pTotal, unit: "kW" },
+            maxValues: { pMax, iMax: 0 },
+            thd: {
+              main: thdMain,
+              details: { thdI1, thdI2, thdI3, thdU1N, thdU2N, thdU3N },
+            },
+            dailyMinMax: newDailyMinMax,
+            extra: {
+              activePowerTotal,
+              activeEnergyDelivered,
+            },
+            cosPhi: {
+              pf1,
+              pf2,
+              pf3,
+              total: pfTotal,
+            },
+          };
         });
 
         // Update History
@@ -146,33 +248,6 @@ function App() {
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-header">
-        <div className="header-item">
-          <span className="header-label">U TOTAL</span>
-          <span className="header-value">
-            {data.summary.uTotal.toFixed(2)} V
-          </span>
-        </div>
-        <div className="header-item">
-          <span className="header-label">I TOTAL</span>
-          <span className="header-value">
-            {data.summary.iTotal.toFixed(2)} A
-          </span>
-        </div>
-        <div className="header-item">
-          <span className="header-label">P MAX</span>
-          <span className="header-value">
-            {data.summary.pMax.toFixed(2)} kW
-          </span>
-        </div>
-        <div className="header-item">
-          <span className="header-label">P MIN</span>
-          <span className="header-value">
-            {data.summary.pMin.toFixed(2)} kW
-          </span>
-        </div>
-      </div>
-
       {/* Main Data Grid */}
       <div className="grid-container">
         {/* Voltage */}
@@ -211,6 +286,11 @@ function App() {
             ]}
             unit="V"
             height="150px"
+          />
+          <MinMaxTable
+            phase1={data.dailyMinMax.voltage.u1}
+            phase2={data.dailyMinMax.voltage.u2}
+            phase3={data.dailyMinMax.voltage.u3}
           />
         </div>
 
@@ -251,6 +331,11 @@ function App() {
             unit="A"
             height="150px"
           />
+          <MinMaxTable
+            phase1={data.dailyMinMax.current.i1}
+            phase2={data.dailyMinMax.current.i2}
+            phase3={data.dailyMinMax.current.i3}
+          />
         </div>
 
         {/* Power */}
@@ -278,12 +363,6 @@ function App() {
                 {data.power.p3.toFixed(2)} {data.power.unit}
               </span>
             </div>
-            <div className="phase-item total-power">
-              <span className="phase-label">Total</span>
-              <span className="phase-value">
-                {data.power.total.toFixed(2)} {data.power.unit}
-              </span>
-            </div>
           </div>
           <EnergyChart
             id="powerChart"
@@ -296,31 +375,34 @@ function App() {
             unit="kW"
             height="150px"
           />
+          <MinMaxTable
+            phase1={data.dailyMinMax.power.p1}
+            phase2={data.dailyMinMax.power.p2}
+            phase3={data.dailyMinMax.power.p3}
+          />
         </div>
 
-        {/* Pmin / Pmax */}
+        {/* Cos Phi */}
         <div className="glass-panel">
           <div className="panel-header">
-            <span className="panel-title">Pmin / Pmax</span>
+            <span className="panel-title">Cos Phi (Power Factor)</span>
             <span className="icon">📈</span>
           </div>
 
           <div style={{ width: "100%", height: "180px" }}>
             <Bar3DChart
               data={[
-                { name: "Pmin", value: data.summary.pMin, fill: "#00e676" },
-                { name: "Pmax", value: data.summary.pMax, fill: "#ff3d00" },
+                { name: "PF1", value: data.cosPhi.pf1, fill: "#FFD700" },
+                { name: "PF2", value: data.cosPhi.pf2, fill: "#FF9100" },
+                { name: "PF3", value: data.cosPhi.pf3, fill: "#FFFF00" },
+                { name: "Total", value: data.cosPhi.total, fill: "#00E676" },
               ]}
             />
           </div>
 
           <div className="sub-value">
-            <span>Pmin:</span>
-            <span>{data.summary.pMin.toFixed(2)} kW</span>
-          </div>
-          <div className="sub-value">
-            <span>Pmax:</span>
-            <span>{data.summary.pMax.toFixed(2)} kW</span>
+            <span>Total PF:</span>
+            <span>{data.cosPhi.total.toFixed(2)}</span>
           </div>
         </div>
 
@@ -383,9 +465,46 @@ function App() {
             </div>
           )}
         </div>
+
+        {/* Active Power & Energy */}
+        <div className="glass-panel">
+          <div className="panel-header">
+            <span className="panel-title">Active Power & Energy</span>
+          </div>
+          <div style={{ width: "100%", height: "180px" }}>
+            <Bar3DChart
+              data={[
+                {
+                  name: "Power",
+                  value: data.extra.activePowerTotal,
+                  fill: "#2979FF",
+                },
+                {
+                  name: "Energy",
+                  value: data.extra.activeEnergyDelivered,
+                  fill: "#FFC107",
+                },
+              ]}
+            />
+          </div>
+          <div className="phase-grid">
+            <div className="phase-item">
+              <span className="phase-label">Active Power Total</span>
+              <span className="phase-value">
+                {data.extra.activePowerTotal.toFixed(2)} kW
+              </span>
+            </div>
+            <div className="phase-item">
+              <span className="phase-label">Active Energy Delivered</span>
+              <span className="phase-value">
+                {data.extra.activeEnergyDelivered.toFixed(2)} kWh
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
+      <ThemeSettings />
     </div>
   );
 }
-
 export default App;
