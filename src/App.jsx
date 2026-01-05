@@ -5,7 +5,12 @@ import Bar3DChart from "./components/Bar3DChart";
 import ThemeSettings from "./components/ThemeSettings";
 import eraWidget from "@eohjsc/era-widget";
 
-const MinMaxTable = ({ phase1, phase2, phase3 }) => {
+const MinMaxTable = ({
+  phase1,
+  phase2,
+  phase3,
+  headers = ["Phase 1", "Phase 2", "Phase 3"],
+}) => {
   const format = (val) =>
     val === Infinity || val === -Infinity || val === null
       ? "--"
@@ -30,9 +35,9 @@ const MinMaxTable = ({ phase1, phase2, phase3 }) => {
     <div className="min-max-container">
       <div className="min-max-grid">
         <div className="mm-header"></div>
-        <div className="mm-header">Phase 1</div>
-        <div className="mm-header">Phase 2</div>
-        <div className="mm-header">Phase 3</div>
+        <div className="mm-header">{headers[0]}</div>
+        <div className="mm-header">{headers[1]}</div>
+        <div className="mm-header">{headers[2]}</div>
 
         <div className="mm-label">Min</div>
         {renderValue(phase1.min, phase1.minTime)}
@@ -48,7 +53,7 @@ const MinMaxTable = ({ phase1, phase2, phase3 }) => {
   );
 };
 
-const Header = ({ activePower, activeEnergy }) => {
+const Header = ({ activePower, activeEnergy, acId }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -69,6 +74,10 @@ const Header = ({ activePower, activeEnergy }) => {
             {currentTime.toLocaleDateString("vi-VN")}
           </span>
         </span>
+      </div>
+      <div className="header-item">
+        <span className="header-label">AC ID</span>
+        <span className="header-value">{acId || "--"}</span>
       </div>
       <div className="header-item">
         <span className="header-label">Power Total</span>
@@ -155,6 +164,7 @@ function App() {
     extra: {
       activePowerTotal: 0,
       activeEnergyDelivered: 0,
+      acId: "",
     },
     cosPhi: {
       pf1: 0,
@@ -176,8 +186,10 @@ function App() {
       const ids = configIdsRef.current;
       if (ids.length === 0) return;
 
-      const getValue = (index) =>
-        ids[index] && values[ids[index]] ? values[ids[index]].value : 0;
+      const getValue = (index, defaultValue = 0) =>
+        ids[index] && values[ids[index]]
+          ? values[ids[index]].value
+          : defaultValue;
 
       // Mapping based on user instruction: U1(0), U2(1), U3(2), ...
       const u1 = getValue(0);
@@ -240,6 +252,9 @@ function App() {
       const pf2 = getValue(18);
       const pf3 = getValue(19);
       const pfTotal = getValue(20);
+
+      // AC ID to distinguish between devices (Index 21)
+      const acId = getValue(21, "");
 
       const thdMain = Math.max(thdI1, thdI2, thdI3);
       const time = new Date().toLocaleTimeString([], { hour12: false });
@@ -402,19 +417,19 @@ function App() {
           </div>
           <div className="phase-grid">
             <div className="phase-item">
-              <span className="phase-label">U1</span>
+              <span className="phase-label">U12</span>
               <span className="phase-value">
                 {data.voltage.u1.toFixed(2)} {data.voltage.unit}
               </span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">U2</span>
+              <span className="phase-label">U23</span>
               <span className="phase-value">
                 {data.voltage.u2.toFixed(2)} {data.voltage.unit}
               </span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">U3</span>
+              <span className="phase-label">U31</span>
               <span className="phase-value">
                 {data.voltage.u3.toFixed(2)} {data.voltage.unit}
               </span>
@@ -424,9 +439,9 @@ function App() {
             id="voltageChart"
             data={voltageHistory}
             lines={[
-              { key: "value1", color: "#FFD700", name: "U1" },
-              { key: "value2", color: "#FF9100", name: "U2" },
-              { key: "value3", color: "#FFFF00", name: "U3" },
+              { key: "value1", color: "#FFD700", name: "U12" },
+              { key: "value2", color: "#FF9100", name: "U23" },
+              { key: "value3", color: "#FFFF00", name: "U31" },
             ]}
             unit="V"
             height="150px"
@@ -435,6 +450,7 @@ function App() {
             phase1={data.dailyMinMax.voltage.u1}
             phase2={data.dailyMinMax.voltage.u2}
             phase3={data.dailyMinMax.voltage.u3}
+            headers={["U12", "U23", "U31"]}
           />
         </div>
 
@@ -446,19 +462,19 @@ function App() {
           </div>
           <div className="phase-grid">
             <div className="phase-item">
-              <span className="phase-label">I1</span>
+              <span className="phase-label">I12</span>
               <span className="phase-value">
                 {data.current.i1.toFixed(2)} {data.current.unit}
               </span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">I2</span>
+              <span className="phase-label">I23</span>
               <span className="phase-value">
                 {data.current.i2.toFixed(2)} {data.current.unit}
               </span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">I3</span>
+              <span className="phase-label">I31</span>
               <span className="phase-value">
                 {data.current.i3.toFixed(2)} {data.current.unit}
               </span>
@@ -468,9 +484,9 @@ function App() {
             id="currentChart"
             data={currentHistory}
             lines={[
-              { key: "value1", color: "#00E676", name: "I1" },
-              { key: "value2", color: "#00B8D4", name: "I2" },
-              { key: "value3", color: "#64DD17", name: "I3" },
+              { key: "value1", color: "#00E676", name: "I12" },
+              { key: "value2", color: "#00B8D4", name: "I23" },
+              { key: "value3", color: "#64DD17", name: "I31" },
             ]}
             unit="A"
             height="150px"
@@ -479,6 +495,7 @@ function App() {
             phase1={data.dailyMinMax.current.i1}
             phase2={data.dailyMinMax.current.i2}
             phase3={data.dailyMinMax.current.i3}
+            headers={["I12", "I23", "I31"]}
           />
         </div>
 
@@ -490,19 +507,19 @@ function App() {
           </div>
           <div className="phase-grid">
             <div className="phase-item">
-              <span className="phase-label">P1</span>
+              <span className="phase-label">P12</span>
               <span className="phase-value">
                 {data.power.p1.toFixed(2)} {data.power.unit}
               </span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">P2</span>
+              <span className="phase-label">P23</span>
               <span className="phase-value">
                 {data.power.p2.toFixed(2)} {data.power.unit}
               </span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">P3</span>
+              <span className="phase-label">P31</span>
               <span className="phase-value">
                 {data.power.p3.toFixed(2)} {data.power.unit}
               </span>
@@ -512,9 +529,9 @@ function App() {
             id="powerChart"
             data={powerHistory}
             lines={[
-              { key: "value1", color: "#FF3D00", name: "P1" },
-              { key: "value2", color: "#FF9100", name: "P2" },
-              { key: "value3", color: "#FFEA00", name: "P3" },
+              { key: "value1", color: "#FF3D00", name: "P12" },
+              { key: "value2", color: "#FF9100", name: "P23" },
+              { key: "value3", color: "#FFEA00", name: "P31" },
             ]}
             unit="kW"
             height="150px"
@@ -523,6 +540,7 @@ function App() {
             phase1={data.dailyMinMax.power.p1}
             phase2={data.dailyMinMax.power.p2}
             phase3={data.dailyMinMax.power.p3}
+            headers={["P12", "P23", "P31"]}
           />
         </div>
 
@@ -534,15 +552,15 @@ function App() {
           </div>
           <div className="phase-grid">
             <div className="phase-item">
-              <span className="phase-label">PF1</span>
+              <span className="phase-label">PF12</span>
               <span className="phase-value">{data.cosPhi.pf1.toFixed(2)}</span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">PF2</span>
+              <span className="phase-label">PF23</span>
               <span className="phase-value">{data.cosPhi.pf2.toFixed(2)}</span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">PF3</span>
+              <span className="phase-label">PF31</span>
               <span className="phase-value">{data.cosPhi.pf3.toFixed(2)}</span>
             </div>
           </div>
@@ -550,9 +568,9 @@ function App() {
             id="cosPhiChart"
             data={cosPhiHistory}
             lines={[
-              { key: "value1", color: "#FFD700", name: "PF1" },
-              { key: "value2", color: "#FF9100", name: "PF2" },
-              { key: "value3", color: "#FFFF00", name: "PF3" },
+              { key: "value1", color: "#FFD700", name: "PF12" },
+              { key: "value2", color: "#FF9100", name: "PF23" },
+              { key: "value3", color: "#FFFF00", name: "PF31" },
             ]}
             unit=""
             height="150px"
@@ -561,6 +579,7 @@ function App() {
             phase1={data.dailyMinMax.cosPhi?.pf1 || { min: 0, max: 0 }}
             phase2={data.dailyMinMax.cosPhi?.pf2 || { min: 0, max: 0 }}
             phase3={data.dailyMinMax.cosPhi?.pf3 || { min: 0, max: 0 }}
+            headers={["PF12", "PF23", "PF31"]}
           />
         </div>
 
@@ -579,9 +598,9 @@ function App() {
             id="thdChart"
             data={thdHistory}
             lines={[
-              { key: "value1", color: "#2962FF", name: "THD1" },
-              { key: "value2", color: "#00B0FF", name: "THD2" },
-              { key: "value3", color: "#00E5FF", name: "THD3" },
+              { key: "value1", color: "#2962FF", name: "THD12" },
+              { key: "value2", color: "#00B0FF", name: "THD23" },
+              { key: "value3", color: "#00E5FF", name: "THD31" },
             ]}
             unit="%"
             height="150px"
@@ -597,27 +616,27 @@ function App() {
           {showFullTHD && (
             <div className="thd-grid">
               <div className="thd-item">
-                <span>THD I1</span>
+                <span>THD I12</span>
                 <span>{data.thd.details.thdI1.toFixed(2)}%</span>
               </div>
               <div className="thd-item">
-                <span>THD I2</span>
+                <span>THD I23</span>
                 <span>{data.thd.details.thdI2.toFixed(2)}%</span>
               </div>
               <div className="thd-item">
-                <span>THD I3</span>
+                <span>THD I31</span>
                 <span>{data.thd.details.thdI3.toFixed(2)}%</span>
               </div>
               <div className="thd-item">
-                <span>THD U1-N</span>
+                <span>THD U12</span>
                 <span>{data.thd.details.thdU1N.toFixed(2)}%</span>
               </div>
               <div className="thd-item">
-                <span>THD U2-N</span>
+                <span>THD U23</span>
                 <span>{data.thd.details.thdU2N.toFixed(2)}%</span>
               </div>
               <div className="thd-item">
-                <span>THD U3-N</span>
+                <span>THD U31</span>
                 <span>{data.thd.details.thdU3N.toFixed(2)}%</span>
               </div>
             </div>
