@@ -90,6 +90,7 @@ const Header = ({ activePower, activeEnergy, acId }) => {
 
 function App() {
   const [showFullTHD, setShowFullTHD] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const configIdsRef = useRef([]);
   const pendingValuesRef = useRef(null);
   const lastPMinUpdateRef = useRef(0);
@@ -114,7 +115,6 @@ function App() {
     current: {
       i1: 0,
       i2: 0,
-      i3: 0,
       unit: "A",
     },
     power: {
@@ -398,6 +398,7 @@ function App() {
     <div className="dashboard-container">
       <Header
         activePower={data.extra.activePowerTotal}
+        onAddDevice={() => setIsConfigModalOpen(true)}
         activeEnergy={data.extra.activeEnergyDelivered}
       />
       {/* Main Data Grid */}
@@ -422,7 +423,6 @@ function App() {
               </span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">U31</span>
               <span className="phase-value">
                 {data.voltage.u3.toFixed(2)} {data.voltage.unit}
               </span>
@@ -545,15 +545,15 @@ function App() {
           </div>
           <div className="phase-grid">
             <div className="phase-item">
-              <span className="phase-label">PF12</span>
+              <span className="phase-label">PF1</span>
               <span className="phase-value">{data.cosPhi.pf1.toFixed(2)}</span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">PF23</span>
+              <span className="phase-label">PF2</span>
               <span className="phase-value">{data.cosPhi.pf2.toFixed(2)}</span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">PF31</span>
+              <span className="phase-label">PF3</span>
               <span className="phase-value">{data.cosPhi.pf3.toFixed(2)}</span>
             </div>
           </div>
@@ -561,9 +561,9 @@ function App() {
             id="cosPhiChart"
             data={cosPhiHistory}
             lines={[
-              { key: "value1", color: "#FFD700", name: "PF12" },
-              { key: "value2", color: "#FF9100", name: "PF23" },
-              { key: "value3", color: "#FFFF00", name: "PF31" },
+              { key: "value1", color: "#FFD700", name: "PF1" },
+              { key: "value2", color: "#FF9100", name: "PF2" },
+              { key: "value3", color: "#FFFF00", name: "PF3" },
             ]}
             unit=""
             height="150px"
@@ -572,7 +572,7 @@ function App() {
             phase1={data.dailyMinMax.cosPhi?.pf1 || { min: 0, max: 0 }}
             phase2={data.dailyMinMax.cosPhi?.pf2 || { min: 0, max: 0 }}
             phase3={data.dailyMinMax.cosPhi?.pf3 || { min: 0, max: 0 }}
-            headers={["PF12", "PF23", "PF31"]}
+            headers={["PF1", "PF2", "PF3"]}
           />
         </div>
 
