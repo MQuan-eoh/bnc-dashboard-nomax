@@ -403,32 +403,4 @@
   }
 }
 
-/* Max Values Display */
-.max-values-container {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.max-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.max-label {
-  font-size: 0.75rem;
-  color: #aaaaaa;
-  text-transform: uppercase;
-}
-
-.max-value {
-  font-size: 0.9rem;
-  color: #ffffff;
-  font-weight: 500;
-}
+/* Max Values Display removed */

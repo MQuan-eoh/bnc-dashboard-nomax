@@ -51,27 +51,18 @@ function App() {
       u1: 0,
       u2: 0,
       u3: 0,
-      uMax1: 0,
-      uMax2: 0,
-      uMax3: 0,
       unit: "V",
     },
     current: {
       i1: 0,
       i2: 0,
       i3: 0,
-      iMax1: 0,
-      iMax2: 0,
-      iMax3: 0,
       unit: "A",
     },
     power: {
       p1: 0,
       p2: 0,
       p3: 0,
-      pMax1: 0,
-      pMax2: 0,
-      pMax3: 0,
       total: 0,
       unit: "kW",
     },
@@ -148,28 +139,15 @@ function App() {
       const pf3 = getValue(19);
       const pfTotal = getValue(20);
 
-      // Max Values
-      const uMax1 = getValue(21);
-      const uMax2 = getValue(22);
-      const uMax3 = getValue(23);
-
-      const iMax1 = getValue(24);
-      const iMax2 = getValue(25);
-      const iMax3 = getValue(26);
-
-      const pMax1 = getValue(27);
-      const pMax2 = getValue(28);
-      const pMax3 = getValue(29);
-
       const thdMain = Math.max(thdI1, thdI2, thdI3);
       const time = new Date().toLocaleTimeString([], { hour12: false });
 
       // Update Data State
       setData(() => {
         return {
-          voltage: { u1, u2, u3, uMax1, uMax2, uMax3, unit: "V" },
-          current: { i1, i2, i3, iMax1, iMax2, iMax3, unit: "A" },
-          power: { p1, p2, p3, pMax1, pMax2, pMax3, total: pTotal, unit: "kW" },
+          voltage: { u1, u2, u3, unit: "V" },
+          current: { i1, i2, i3, unit: "A" },
+          power: { p1, p2, p3, total: pTotal, unit: "kW" },
           thd: {
             main: thdMain,
             details: { thdI1, thdI2, thdI3, thdU1N, thdU2N, thdU3N },
@@ -280,26 +258,6 @@ function App() {
             unit="V"
             height="150px"
           />
-          <div className="max-values-container">
-            <div className="max-item">
-              <span className="max-label">Max U12</span>
-              <span className="max-value">
-                {data.voltage.uMax1.toFixed(2)} {data.voltage.unit}
-              </span>
-            </div>
-            <div className="max-item">
-              <span className="max-label">Max U23</span>
-              <span className="max-value">
-                {data.voltage.uMax2.toFixed(2)} {data.voltage.unit}
-              </span>
-            </div>
-            <div className="max-item">
-              <span className="max-label">Max U31</span>
-              <span className="max-value">
-                {data.voltage.uMax3.toFixed(2)} {data.voltage.unit}
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Current */}
@@ -339,26 +297,6 @@ function App() {
             unit="A"
             height="150px"
           />
-          <div className="max-values-container">
-            <div className="max-item">
-              <span className="max-label">Max I12</span>
-              <span className="max-value">
-                {data.current.iMax1.toFixed(2)} {data.current.unit}
-              </span>
-            </div>
-            <div className="max-item">
-              <span className="max-label">Max I23</span>
-              <span className="max-value">
-                {data.current.iMax2.toFixed(2)} {data.current.unit}
-              </span>
-            </div>
-            <div className="max-item">
-              <span className="max-label">Max I31</span>
-              <span className="max-value">
-                {data.current.iMax3.toFixed(2)} {data.current.unit}
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Power */}
@@ -398,26 +336,6 @@ function App() {
             unit="kW"
             height="150px"
           />
-          <div className="max-values-container">
-            <div className="max-item">
-              <span className="max-label">Max P12</span>
-              <span className="max-value">
-                {data.power.pMax1.toFixed(2)} {data.power.unit}
-              </span>
-            </div>
-            <div className="max-item">
-              <span className="max-label">Max P23</span>
-              <span className="max-value">
-                {data.power.pMax2.toFixed(2)} {data.power.unit}
-              </span>
-            </div>
-            <div className="max-item">
-              <span className="max-label">Max P31</span>
-              <span className="max-value">
-                {data.power.pMax3.toFixed(2)} {data.power.unit}
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Cos Phi */}
