@@ -44,6 +44,7 @@ function App() {
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const configIdsRef = useRef([]);
   const pendingValuesRef = useRef(null);
+  const lastChartUpdateRef = useRef(0);
 
   // Initial Data State
   const [data, setData] = useState({
@@ -165,18 +166,34 @@ function App() {
         };
       });
 
-      // Update History
+      // Update History with throttling
+      const now = Date.now();
+      const SAMPLE_INTERVAL_MS = 10000; // Sample every 10 seconds
+      const MAX_DATA_POINTS = 60;       // 60 points × 10s = 10 minutes
 
-      const updateChartData = (prev, v1, v2, v3) => {
-        const newData = [...prev, { time, value1: v1, value2: v2, value3: v3 }];
-        return newData.slice(-20); // Keep last 20 points
-      };
+      if (now - lastChartUpdateRef.current >= SAMPLE_INTERVAL_MS) {
+        lastChartUpdateRef.current = now;
 
-      setVoltageHistory((prev) => updateChartData(prev, u1, u2, u3));
-      setCurrentHistory((prev) => updateChartData(prev, i1, i2, i3));
-      setPowerHistory((prev) => updateChartData(prev, p1, p2, p3));
-      setCosPhiHistory((prev) => updateChartData(prev, pf1, pf2, pf3));
-      setThdHistory((prev) => updateChartData(prev, thdI1, thdI2, thdI3));
+        const updateChartData = (prev, v1, v2, v3) => {
+          const newData = [...prev, { time, value1: v1, value2: v2, value3: v3 }];
+          return newData.slice(-MAX_DATA_POINTS);
+        };
+
+        const updateThdChartData = (prev) => {
+          const newData = [...prev, { 
+            time, 
+            thdI1, thdI2, thdI3,
+            thdU1: thdU1N, thdU2: thdU2N, thdU3: thdU3N 
+          }];
+          return newData.slice(-MAX_DATA_POINTS);
+        };
+
+        setVoltageHistory((prev) => updateChartData(prev, u1, u2, u3));
+        setCurrentHistory((prev) => updateChartData(prev, i1, i2, i3));
+        setPowerHistory((prev) => updateChartData(prev, p1, p2, p3));
+        setCosPhiHistory((prev) => updateChartData(prev, pf1, pf2, pf3));
+        setThdHistory((prev) => updateThdChartData(prev));
+      }
     };
 
     eraWidget.init({
@@ -251,9 +268,9 @@ function App() {
             id="voltageChart"
             data={voltageHistory}
             lines={[
-              { key: "value1", color: "#FFD700", name: "U12" },
-              { key: "value2", color: "#FF9100", name: "U23" },
-              { key: "value3", color: "#FFFF00", name: "U31" },
+              { key: "value1", color: "#FF5252", name: "U12" },
+              { key: "value2", color: "#4CAF50", name: "U23" },
+              { key: "value3", color: "#2196F3", name: "U31" },
             ]}
             unit="V"
             height="150px"
@@ -362,9 +379,9 @@ function App() {
             id="cosPhiChart"
             data={cosPhiHistory}
             lines={[
-              { key: "value1", color: "#FFD700", name: "PF1" },
-              { key: "value2", color: "#FF9100", name: "PF2" },
-              { key: "value3", color: "#FFFF00", name: "PF3" },
+              { key: "value1", color: "#E040FB", name: "PF1" },
+              { key: "value2", color: "#7C4DFF", name: "PF2" },
+              { key: "value3", color: "#FF4081", name: "PF3" },
             ]}
             unit=""
             height="150px"
@@ -386,38 +403,46 @@ function App() {
             id="thdChart"
             data={thdHistory}
             lines={[
-              { key: "value1", color: "#2962FF", name: "THD12" },
-              { key: "value2", color: "#00B0FF", name: "THD23" },
-              { key: "value3", color: "#00E5FF", name: "THD31" },
+              { key: "thdI1", color: "#FF5252", name: "THD I1" },
+              { key: "thdI2", color: "#FF9800", name: "THD I2" },
+              { key: "thdI3", color: "#FFEB3B", name: "THD I3" },
+              { key: "thdU1", color: "#2962FF", name: "THD U1" },
+              { key: "thdU2", color: "#00BCD4", name: "THD U2" },
+              { key: "thdU3", color: "#4CAF50", name: "THD U3" },
             ]}
             unit="%"
             height="150px"
           />
 
-          <div className="thd-grid">
+          <div className="thd-grid" style={{ 
+            display: 'grid', 
+            gridTemplateColumns: '1fr 1fr 1fr', 
+            gap: '0.5rem', 
+            marginTop: '1rem' 
+          }}>
             <div className="thd-item">
-              <span>THD I12</span>
-              <span>{data.thd.details.thdI1.toFixed(2)}%</span>
-            </div>
-            <div className="thd-item">
-              <span>THD I23</span>
-              <span>{data.thd.details.thdI2.toFixed(2)}%</span>
-            </div>
-            <div className="thd-item">
-              <span>THD I31</span>
-              <span>{data.thd.details.thdI3.toFixed(2)}%</span>
-            </div>
-            <div className="thd-item">
-              <span>THD U12</span>
+              <span>THD U1</span>
               <span>{data.thd.details.thdU1N.toFixed(2)}%</span>
             </div>
             <div className="thd-item">
-              <span>THD U23</span>
+              <span>THD U2</span>
               <span>{data.thd.details.thdU2N.toFixed(2)}%</span>
             </div>
             <div className="thd-item">
-              <span>THD U31</span>
+              <span>THD U3</span>
               <span>{data.thd.details.thdU3N.toFixed(2)}%</span>
+            </div>
+            <div className="thd-item">
+              <span>THD I1</span>
+              <span>{data.thd.details.thdI1.toFixed(2)}%</span>
+            </div>
+            <div className="thd-item">
+              <span>THD I2</span>
+              <span>{data.thd.details.thdI2.toFixed(2)}%</span>
+            </div>
+            <div className="thd-item">
+              <span>THD I3</span>
+              <span>{data.thd.details.thdI3.toFixed(2)}%</span>
             </div>
           </div>
         </div>
