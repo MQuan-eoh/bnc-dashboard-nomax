@@ -169,22 +169,32 @@ function App() {
       // Update History with throttling
       const now = Date.now();
       const SAMPLE_INTERVAL_MS = 10000; // Sample every 10 seconds
-      const MAX_DATA_POINTS = 60;       // 60 points × 10s = 10 minutes
+      const MAX_DATA_POINTS = 60; // 60 points × 10s = 10 minutes
 
       if (now - lastChartUpdateRef.current >= SAMPLE_INTERVAL_MS) {
         lastChartUpdateRef.current = now;
 
         const updateChartData = (prev, v1, v2, v3) => {
-          const newData = [...prev, { time, value1: v1, value2: v2, value3: v3 }];
+          const newData = [
+            ...prev,
+            { time, value1: v1, value2: v2, value3: v3 },
+          ];
           return newData.slice(-MAX_DATA_POINTS);
         };
 
         const updateThdChartData = (prev) => {
-          const newData = [...prev, { 
-            time, 
-            thdI1, thdI2, thdI3,
-            thdU1: thdU1N, thdU2: thdU2N, thdU3: thdU3N 
-          }];
+          const newData = [
+            ...prev,
+            {
+              time,
+              thdI1,
+              thdI2,
+              thdI3,
+              thdU1: thdU1N,
+              thdU2: thdU2N,
+              thdU3: thdU3N,
+            },
+          ];
           return newData.slice(-MAX_DATA_POINTS);
         };
 
@@ -285,19 +295,19 @@ function App() {
           </div>
           <div className="phase-grid">
             <div className="phase-item">
-              <span className="phase-label">I12</span>
+              <span className="phase-label">I1</span>
               <span className="phase-value">
                 {data.current.i1.toFixed(2)} {data.current.unit}
               </span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">I23</span>
+              <span className="phase-label">I2</span>
               <span className="phase-value">
                 {data.current.i2.toFixed(2)} {data.current.unit}
               </span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">I31</span>
+              <span className="phase-label">I3</span>
               <span className="phase-value">
                 {data.current.i3.toFixed(2)} {data.current.unit}
               </span>
@@ -307,9 +317,9 @@ function App() {
             id="currentChart"
             data={currentHistory}
             lines={[
-              { key: "value1", color: "#00E676", name: "I12" },
-              { key: "value2", color: "#00B8D4", name: "I23" },
-              { key: "value3", color: "#64DD17", name: "I31" },
+              { key: "value1", color: "#00E676", name: "I1" },
+              { key: "value2", color: "#00B8D4", name: "I2" },
+              { key: "value3", color: "#64DD17", name: "I3" },
             ]}
             unit="A"
             height="150px"
@@ -324,19 +334,19 @@ function App() {
           </div>
           <div className="phase-grid">
             <div className="phase-item">
-              <span className="phase-label">P12</span>
+              <span className="phase-label">P1</span>
               <span className="phase-value">
                 {data.power.p1.toFixed(2)} {data.power.unit}
               </span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">P23</span>
+              <span className="phase-label">P2</span>
               <span className="phase-value">
                 {data.power.p2.toFixed(2)} {data.power.unit}
               </span>
             </div>
             <div className="phase-item">
-              <span className="phase-label">P31</span>
+              <span className="phase-label">P3</span>
               <span className="phase-value">
                 {data.power.p3.toFixed(2)} {data.power.unit}
               </span>
@@ -346,9 +356,9 @@ function App() {
             id="powerChart"
             data={powerHistory}
             lines={[
-              { key: "value1", color: "#FF3D00", name: "P12" },
-              { key: "value2", color: "#FF9100", name: "P23" },
-              { key: "value3", color: "#FFEA00", name: "P31" },
+              { key: "value1", color: "#FF3D00", name: "P1" },
+              { key: "value2", color: "#FF9100", name: "P2" },
+              { key: "value3", color: "#FFEA00", name: "P3" },
             ]}
             unit="kW"
             height="150px"
@@ -414,12 +424,15 @@ function App() {
             height="150px"
           />
 
-          <div className="thd-grid" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: '1fr 1fr 1fr', 
-            gap: '0.5rem', 
-            marginTop: '1rem' 
-          }}>
+          <div
+            className="thd-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              gap: "0.5rem",
+              marginTop: "1rem",
+            }}
+          >
             <div className="thd-item">
               <span>THD U1</span>
               <span>{data.thd.details.thdU1N.toFixed(2)}%</span>
