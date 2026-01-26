@@ -101,7 +101,10 @@
   border-radius: 16px;
   padding: 1rem; /* Reduced padding from 1.5rem */
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    background 0.3s ease;
   text-align: left;
   overflow: hidden;
 }
@@ -117,8 +120,12 @@
   border-radius: 16px;
   padding: 2px;
   background: linear-gradient(90deg, transparent, #00f2ff, transparent);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   background-size: 200% 100%;
@@ -130,7 +137,9 @@
 .glass-panel:hover {
   transform: translateY(-4px);
   background: rgba(0, 0, 0, 0.85); /* Darker/Stronger on hover */
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 242, 255, 0.2);
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(0, 242, 255, 0.2);
   border-color: transparent; /* Hide real border to show the running one */
 }
 
@@ -206,20 +215,28 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
-.thd-grid {
+.max-values-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
   margin-top: 1rem;
+  padding: 0.5rem;
 }
 
-.thd-item {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 0.5rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
+.max-item {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.max-label {
+  font-size: 0.75rem;
+  color: #aaaaaa;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .min-max-container {
@@ -285,7 +302,9 @@
   opacity: 0;
   transition: all 0.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
   border: 1px solid rgba(0, 242, 255, 0.3);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 255, 0.15);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(0, 242, 255, 0.15);
   pointer-events: none;
   display: flex;
   align-items: center;

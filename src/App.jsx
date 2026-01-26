@@ -68,7 +68,6 @@ function App() {
       unit: "kW",
     },
     thd: {
-      main: 0,
       details: {
         thdI1: 0,
         thdI2: 0,
@@ -140,7 +139,7 @@ function App() {
       const pf3 = getValue(19);
       const pfTotal = getValue(20);
 
-      const thdMain = Math.max(thdI1, thdI2, thdI3);
+
       const time = new Date().toLocaleTimeString([], { hour12: false });
 
       // Update Data State
@@ -150,7 +149,6 @@ function App() {
           current: { i1, i2, i3, unit: "A" },
           power: { p1, p2, p3, total: pTotal, unit: "kW" },
           thd: {
-            main: thdMain,
             details: { thdI1, thdI2, thdI3, thdU1N, thdU2N, thdU3N },
           },
           extra: {
@@ -404,9 +402,46 @@ function App() {
             <span className="panel-title">THD (Total Harmonic Distortion)</span>
             <span className="icon">📊</span>
           </div>
-          <div>
-            <span className="panel-value">{data.thd.main.toFixed(2)}</span>
-            <span className="panel-unit">%</span>
+
+
+
+          <div className="max-values-container">
+            <div className="max-item">
+              <span className="max-label">THD U1</span>
+              <span className="max-value">
+                {data.thd.details.thdU1N.toFixed(2)}%
+              </span>
+            </div>
+            <div className="max-item">
+              <span className="max-label">THD U2</span>
+              <span className="max-value">
+                {data.thd.details.thdU2N.toFixed(2)}%
+              </span>
+            </div>
+            <div className="max-item">
+              <span className="max-label">THD U3</span>
+              <span className="max-value">
+                {data.thd.details.thdU3N.toFixed(2)}%
+              </span>
+            </div>
+            <div className="max-item">
+              <span className="max-label">THD I1</span>
+              <span className="max-value">
+                {data.thd.details.thdI1.toFixed(2)}%
+              </span>
+            </div>
+            <div className="max-item">
+              <span className="max-label">THD I2</span>
+              <span className="max-value">
+                {data.thd.details.thdI2.toFixed(2)}%
+              </span>
+            </div>
+            <div className="max-item">
+              <span className="max-label">THD I3</span>
+              <span className="max-value">
+                {data.thd.details.thdI3.toFixed(2)}%
+              </span>
+            </div>
           </div>
 
           <EnergyChart
@@ -423,41 +458,6 @@ function App() {
             unit="%"
             height="150px"
           />
-
-          <div
-            className="thd-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: "0.5rem",
-              marginTop: "1rem",
-            }}
-          >
-            <div className="thd-item">
-              <span>THD U1</span>
-              <span>{data.thd.details.thdU1N.toFixed(2)}%</span>
-            </div>
-            <div className="thd-item">
-              <span>THD U2</span>
-              <span>{data.thd.details.thdU2N.toFixed(2)}%</span>
-            </div>
-            <div className="thd-item">
-              <span>THD U3</span>
-              <span>{data.thd.details.thdU3N.toFixed(2)}%</span>
-            </div>
-            <div className="thd-item">
-              <span>THD I1</span>
-              <span>{data.thd.details.thdI1.toFixed(2)}%</span>
-            </div>
-            <div className="thd-item">
-              <span>THD I2</span>
-              <span>{data.thd.details.thdI2.toFixed(2)}%</span>
-            </div>
-            <div className="thd-item">
-              <span>THD I3</span>
-              <span>{data.thd.details.thdI3.toFixed(2)}%</span>
-            </div>
-          </div>
         </div>
       </div>
       <ThemeSettings />
